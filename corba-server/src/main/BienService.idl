@@ -1,0 +1,16 @@
+module Immobilier {
+    struct Bien {
+        long id;
+        string titre;
+        string description;
+        boolean disponible;
+    };
+
+    typedef sequence<Bien> BienSeq;
+
+    interface BienService {
+        long addBien(in Bien b);
+        BienSeq listBiens();
+        boolean checkDisponibilite(in long bienId);
+    };
+};
