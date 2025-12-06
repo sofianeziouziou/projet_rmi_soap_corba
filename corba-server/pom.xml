@@ -1,7 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.immobilier</groupId>
         <artifactId>ImmobilierProject</artifactId>
@@ -9,50 +12,65 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <modelVersion>4.0.0</modelVersion>
     <artifactId>corba-server</artifactId>
+    <packaging>jar</packaging>
 
     <dependencies>
-
-
-        <!-- JMS pour notifications -->
+        <!-- JacORB -->
         <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-client</artifactId>
-            <version>5.17.4</version>
+            <groupId>org.jacorb</groupId>
+            <artifactId>jacorb</artifactId>
+            <version>3.9</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.corba</groupId>
-            <artifactId>glassfish-corba-omgapi</artifactId>
-            <version>4.2.4</version>
-            <scope>compile</scope>
+            <groupId>org.jacorb</groupId>
+            <artifactId>jacorb-services</artifactId>
+            <version>3.9</version>
         </dependency>
+
+        <!-- RMI-IIOP pour Java 11+ (IMPORTANT) -->
         <dependency>
             <groupId>org.glassfish.corba</groupId>
             <artifactId>glassfish-corba-orb</artifactId>
             <version>4.2.4</version>
         </dependency>
+
+        <!-- SLF4J Simple Logger -->
         <dependency>
-            <groupId>org.glassfish.corba</groupId>
-            <artifactId>glassfish-corba-omgapi</artifactId>
-            <version>4.2.4</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.9</version>
         </dependency>
-
-
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
+                <artifactId>idlj-maven-plugin</artifactId>
+                <version>1.2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sourceDirectory>${project.basedir}/src/main/idl</sourceDirectory>
+                    <outputDirectory>${project.build.directory}/generated-sources/idl</outputDirectory>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.6.2</version>
                 <configuration>
                     <mainClass>com.immobilier.corba.CorbaServer</mainClass>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 
 </project>
