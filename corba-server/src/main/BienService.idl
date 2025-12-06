@@ -3,7 +3,9 @@ module Immobilier {
         long id;
         string titre;
         string description;
+        double prix;
         boolean disponible;
+        long agentId;
     };
 
     typedef sequence<Bien> BienSeq;
@@ -11,6 +13,7 @@ module Immobilier {
     interface BienService {
         long addBien(in Bien b);
         BienSeq listBiens();
+        BienSeq listBiensAgent(in long agentId);
         boolean checkDisponibilite(in long bienId);
     };
 };
