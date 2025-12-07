@@ -1,6 +1,5 @@
 package com.immobilier.soap;
 
-// Changez javax.xml.ws en jakarta.xml.ws
 import jakarta.xml.ws.Endpoint;
 
 public class SoapServer {

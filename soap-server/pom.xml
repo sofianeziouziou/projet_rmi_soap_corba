@@ -13,36 +13,25 @@
     <artifactId>soap-server</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
-
-        <!-- Core (MongoDB + Utilisateur) -->
         <dependency>
             <groupId>com.immobilier</groupId>
             <artifactId>immobilier-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
-        <!-- SOAP -->
         <dependency>
             <groupId>com.sun.xml.ws</groupId>
             <artifactId>jaxws-rt</artifactId>
             <version>4.0.0</version>
         </dependency>
 
-        <!-- JMS -->
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-all</artifactId>
             <version>5.17.3</version>
         </dependency>
 
-        <!-- Log -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
@@ -53,25 +42,10 @@
             <artifactId>log4j-core</artifactId>
             <version>2.20.0</version>
         </dependency>
-
     </dependencies>
 
     <build>
         <plugins>
-
-            <!-- Compiler -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-
-            <!-- Executable -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -80,7 +54,6 @@
                     <mainClass>com.immobilier.soap.SoapServer</mainClass>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 </project>

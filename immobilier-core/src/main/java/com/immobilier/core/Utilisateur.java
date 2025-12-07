@@ -7,18 +7,8 @@ public class Utilisateur {
     private String password;
     private String role;
 
-    // Constructeur vide - OBLIGATOIRE
-    public Utilisateur() {
-    }
+    public Utilisateur() {}
 
-    // Constructeur simple
-    public Utilisateur(long id, String nom, String role) {
-        this.id = id;
-        this.nom = nom;
-        this.role = role;
-    }
-
-    // Constructeur complet
     public Utilisateur(long id, String nom, String email, String role) {
         this.id = id;
         this.nom = nom;
@@ -26,14 +16,12 @@ public class Utilisateur {
         this.role = role;
     }
 
-    // Getters
     public long getId() { return id; }
     public String getNom() { return nom; }
     public String getEmail() { return email; }
     public String getPassword() { return password; }
     public String getRole() { return role; }
 
-    // Setters
     public void setId(long id) { this.id = id; }
     public void setNom(String nom) { this.nom = nom; }
     public void setEmail(String email) { this.email = email; }

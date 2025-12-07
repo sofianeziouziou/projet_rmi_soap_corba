@@ -1,5 +1,7 @@
 package com.immobilier.corba;
 
+import Immobilier.BienServicePOA;
+import com.immobilier.core.MongoDBConnection;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
