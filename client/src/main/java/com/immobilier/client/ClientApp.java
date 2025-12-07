@@ -2,7 +2,7 @@ package com.immobilier.client;
 
 import javax.swing.*;
 import java.awt.*;
-import com.immobilier.rest.Utilisateur;
+import com.immobilier.core.Utilisateur;
 import Immobilier.Bien;
 
 public class ClientApp {

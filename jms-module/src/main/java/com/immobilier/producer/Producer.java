@@ -1,33 +1,30 @@
 package com.immobilier.producer;
 
-import javax.jms.*;
 import org.apache.activemq.ActiveMQConnectionFactory;
+
+import javax.jms.*;
 
 public class Producer {
     private static final String BROKER_URL = "tcp://localhost:61616";
-    private static final String QUEUE = "IMMOBILIER_QUEUE";
+    private static final String QUEUE = "immobilier.notifications";
 
-    public static void send(String text) {
-        ConnectionFactory factory = new ActiveMQConnectionFactory(BROKER_URL);
-        Connection conn = null;
-        Session session = null;
+    public static void sendNotification(String text) {
         try {
-            conn = factory.createConnection();
+            ConnectionFactory factory = new ActiveMQConnectionFactory(BROKER_URL);
+            Connection conn = factory.createConnection();
             conn.start();
-            session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            Queue q = session.createQueue(QUEUE);
-            MessageProducer producer = session.createProducer(q);
-            TextMessage m = session.createTextMessage(text);
-            producer.send(m);
+            Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Queue queue = session.createQueue(QUEUE);
+            MessageProducer producer = session.createProducer(queue);
+            TextMessage msg = session.createTextMessage(text);
+            producer.send(msg);
+            producer.close();
+            session.close();
+            conn.close();
+            System.out.println("✅ JMS notification sent: " + text);
         } catch (Exception e) {
+            System.err.println("❌ JMS send error: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            try {
-                if (session != null) session.close();
-                if (conn != null) conn.close();
-            } catch (JMSException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

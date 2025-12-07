@@ -1,11 +1,11 @@
 package com.immobilier.soap;
 
-// Après (jakarta)
-import jakarta.jws.WebService;
 import jakarta.jws.WebMethod;
+import jakarta.jws.WebParam;
+import jakarta.jws.WebService;
 
 @WebService
 public interface ContractService {
     @WebMethod
-    String createContract(int bienId, int acheteurId);
+    String generateContract(@WebParam(name="bienId") int bienId, @WebParam(name="acheteurId") long acheteurId);
 }

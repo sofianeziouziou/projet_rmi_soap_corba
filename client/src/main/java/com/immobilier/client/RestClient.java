@@ -1,7 +1,8 @@
 package com.immobilier.client;
 
 import com.google.gson.Gson;
-import com.immobilier.rest.Utilisateur;
+import com.immobilier.core.Utilisateur;
+import com.immobilier.core.Utilisateur;
 import org.apache.hc.client5.http.fluent.Request;
 import org.apache.hc.client5.http.fluent.Content;
 import org.apache.hc.core5.http.ContentType;

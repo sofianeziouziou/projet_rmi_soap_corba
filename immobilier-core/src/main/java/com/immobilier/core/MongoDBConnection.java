@@ -12,9 +12,9 @@ public class MongoDBConnection {
     static {
         try {
             mongoClient = MongoClients.create(CONNECTION_STRING);
-            System.out.println("✅ Connexion MongoDB établie");
+            System.out.println("✅ Connexion MongoDB (core) établie");
         } catch (Exception e) {
-            System.err.println("❌ Erreur connexion MongoDB: " + e.getMessage());
+            System.err.println("❌ Erreur connexion MongoDB (core): " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -28,8 +28,6 @@ public class MongoDBConnection {
     }
 
     public static void close() {
-        if (mongoClient != null) {
-            mongoClient.close();
-        }
+        if (mongoClient != null) mongoClient.close();
     }
 }

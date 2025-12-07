@@ -1,5 +1,6 @@
 package com.immobilier.rest;
 
+import com.immobilier.core.MongoDBConnection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 

@@ -1,71 +1,48 @@
 package com.immobilier.soap;
 
 import jakarta.jws.WebService;
+import com.immobilier.core.MongoDBConnection;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+
 import java.util.Date;
-import static com.mongodb.client.model.Filters.*;
 
 @WebService(endpointInterface = "com.immobilier.soap.ContractService")
 public class ContractServiceImpl implements ContractService {
-    private final MongoCollection<Document> contratsCollection;
-    private final MongoCollection<Document> biensCollection;
+    private final MongoCollection<Document> contrats;
+    private final MongoCollection<Document> biens;
 
     public ContractServiceImpl() {
         MongoDatabase db = MongoDBConnection.getDatabase();
-        this.contratsCollection = db.getCollection("contrats");
-        this.biensCollection = db.getCollection("biens");
-        System.out.println("✅ ContractServiceImpl initialisé avec MongoDB");
+        contrats = db.getCollection("contrats");
+        biens = db.getCollection("biens");
+        System.out.println("✅ [SOAP] ContractServiceImpl initialisé");
     }
 
     @Override
-    public String createContract(int bienId, int acheteurId) {
+    public String generateContract(int bienId, long acheteurId) {
         try {
-            // Vérifier si le bien existe et est disponible
-            Document bien = biensCollection.find(eq("_id", (long) bienId)).first();
+            Document bien = biens.find(new Document("_id", (long) bienId)).first();
+            if (bien == null) return "<error>bien_not_found</error>";
 
-            if (bien == null) {
-                return "❌ Erreur: Bien " + bienId + " introuvable";
-            }
-
-            if (!bien.getBoolean("disponible", false)) {
-                return "❌ Erreur: Bien " + bienId + " n'est plus disponible";
-            }
-
-            // Créer le contrat
-            long newId = contratsCollection.countDocuments() + 1;
-
-            Document contrat = new Document()
+            long newId = contrats.countDocuments() + 1;
+            Document c = new Document()
                     .append("_id", newId)
                     .append("bienId", (long) bienId)
-                    .append("acheteurId", (long) acheteurId)
+                    .append("acheteurId", acheteurId)
                     .append("dateCreation", new Date())
-                    .append("statut", "en_cours")
+                    .append("statut", "finalisé")
                     .append("montant", bien.getDouble("prix"));
+            contrats.insertOne(c);
 
-            contratsCollection.insertOne(contrat);
-
-            // Marquer le bien comme non disponible
-            biensCollection.updateOne(
-                    eq("_id", (long) bienId),
-                    new Document("$set", new Document("disponible", false))
-            );
-
-            String message = "✅ Contrat créé avec succès!\n" +
-                    "ID Contrat: " + newId + "\n" +
-                    "Bien: " + bien.getString("titre") + "\n" +
-                    "Prix: " + bien.getDouble("prix") + " €\n" +
-                    "Acheteur ID: " + acheteurId;
-
-            System.out.println(message);
-            return message;
-
+            // simple XML string contract
+            String xml = "<contract><id>" + newId + "</id><bienId>" + bienId + "</bienId><acheteurId>" + acheteurId + "</acheteurId><montant>" +
+                    bien.getDouble("prix") + "</montant></contract>";
+            return xml;
         } catch (Exception e) {
-            String error = "❌ Erreur lors de la création du contrat: " + e.getMessage();
-            System.err.println(error);
             e.printStackTrace();
-            return error;
+            return "<error>server</error>";
         }
     }
 }

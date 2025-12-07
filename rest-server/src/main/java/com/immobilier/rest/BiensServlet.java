@@ -1,11 +1,13 @@
 package com.immobilier.rest;
 
-import com.immobilier.corba.BienService; // ton interface CORBA
-import com.immobilier.corba.BienServiceHelper;
-import com.immobilier.corba.Immobilier.Bien;
+import com.google.gson.Gson;
+import com.immobilier.core.Bien;
+import com.immobilier.core.MongoDBConnection;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import com.google.gson.Gson;
+import org.bson.Document;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,63 +16,33 @@ import java.util.List;
 @WebServlet("/biens/*")
 public class BiensServlet extends HttpServlet {
     private final Gson gson = new Gson();
-    private BienService corbaService;
+    private final MongoCollection<Document> coll;
 
-    @Override
-    public void init() {
-        try {
-            // Récupération de l'IOR CORBA depuis fichier
-            String ior = getServletContext().getRealPath("/BienService.ior");
-            corbaService = BienServiceHelper.narrow(
-                    org.omg.CORBA.ORB.init().string_to_object(new java.io.FileReader(ior).readLine())
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-            corbaService = null;
-        }
+    public BiensServlet() {
+        MongoDatabase db = MongoDBConnection.getDatabase();
+        coll = db.getCollection("biens");
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        // GET /biens -> list biens
         resp.setContentType("application/json;charset=UTF-8");
-        if(corbaService == null){
-            resp.getWriter().write("{\"error\":\"CORBA service not available\"}");
-            return;
-        }
-
         try {
-            Bien[] biens = corbaService.listBiens();
-            List<Object> list = new ArrayList<>();
-            for(Bien b : biens){
-                list.add(new Object(){
-                    public final long id = b.id;
-                    public final String titre = b.titre;
-                    public final String description = b.description;
-                    public final double prix = b.prix;
-                    public final boolean disponible = b.disponible;
-                });
+            List<Bien> list = new ArrayList<>();
+            for (Document d : coll.find()) {
+                Bien b = new Bien();
+                b.setId(d.getLong("_id"));
+                b.setTitre(d.getString("titre"));
+                b.setDescription(d.getString("description"));
+                b.setPrix(d.getDouble("prix"));
+                b.setDisponible(d.getBoolean("disponible", false));
+                b.setAgentId(d.getLong("agentId"));
+                list.add(b);
             }
             resp.getWriter().write(gson.toJson(list));
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            resp.getWriter().write("{\"error\":\"server\"}");
-        }
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        if(corbaService == null){
-            resp.getWriter().write("{\"error\":\"CORBA service not available\"}");
-            return;
-        }
-
-        try {
-            Bien b = gson.fromJson(req.getReader(), Bien.class);
-            long id = corbaService.addBien(b);
-            resp.getWriter().write("{\"success\":true, \"id\":" + id + "}");
-        } catch(Exception e){
-            e.printStackTrace();
+            resp.setStatus(500);
             resp.getWriter().write("{\"error\":\"server\"}");
         }
     }
