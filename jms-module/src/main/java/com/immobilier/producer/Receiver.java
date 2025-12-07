@@ -9,10 +9,13 @@ public class Receiver {
             ConnectionFactory factory = new ActiveMQConnectionFactory("tcp://localhost:61616");
             Connection conn = factory.createConnection();
             conn.start();
+            System.out.println("connexion jms valide");
+
             Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
             Queue queue = session.createQueue("immobilier.notifications");
             MessageConsumer consumer = session.createConsumer(queue);
             consumer.setMessageListener(message -> {
+
                 try{
                     if(message instanceof TextMessage){
                         String text = ((TextMessage) message).getText();

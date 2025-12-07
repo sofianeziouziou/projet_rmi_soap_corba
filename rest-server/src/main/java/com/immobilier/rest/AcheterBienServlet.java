@@ -3,67 +3,92 @@ package com.immobilier.rest;
 import com.google.gson.Gson;
 import com.immobilier.core.MongoDBConnection;
 import com.immobilier.producer.Producer;
-import com.immobilier.soap.ContractService;
-
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-
+import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import jakarta.xml.ws.Service;
-import org.bson.Document;
+import static com.mongodb.client.model.Filters.eq;
 
-import javax.xml.namespace.QName;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URL;
-import java.security.Provider;
+import java.util.Date;
 
 @WebServlet("/acheterBien")
 public class AcheterBienServlet extends HttpServlet {
+
     private final Gson gson = new Gson();
     private final MongoCollection<Document> biens;
+    private final MongoCollection<Document> contrats;
 
     public AcheterBienServlet() {
         MongoDatabase db = MongoDBConnection.getDatabase();
         biens = db.getCollection("biens");
+        contrats = db.getCollection("contrats");
+    }
+
+    public static class AchatRequest {
+        public long bienId;
+        public long acheteurId;
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json;charset=UTF-8");
-        try {
-            class Req { public int bienId; public long acheteurId; }
-            Req body = gson.fromJson(req.getReader(), Req.class);
 
-            Document bien = biens.find(new Document("_id", (long) body.bienId)).first();
-            if(bien == null){
-                resp.setStatus(404);
-                resp.getWriter().write("{\"error\":\"bien_not_found\"}");
+        try {
+            // Lire JSON de la requête
+            StringBuilder sb = new StringBuilder();
+            BufferedReader reader = req.getReader();
+            String line;
+            while ((line = reader.readLine()) != null) sb.append(line);
+            AchatRequest achat = gson.fromJson(sb.toString(), AchatRequest.class);
+
+            // Vérifier si le bien existe
+            Document docBien = biens.find(eq("_id", achat.bienId)).first();
+            if (docBien == null) {
+                // Essayer avec cast double si ID mismatch
+                docBien = biens.find(eq("_id", (double) achat.bienId)).first();
+                if (docBien == null) {
+                    resp.getWriter().write("{\"error\":\"bien_not_found\"}");
+                    return;
+                }
+            }
+
+            // Vérifier disponibilité
+            if (!docBien.getBoolean("disponible", false)) {
+                resp.getWriter().write("{\"error\":\"bien_not_available\"}");
                 return;
             }
 
-            // Appel SOAP ContractService
-            URL wsdlURL = new URL("http://localhost:8081/contracts?wsdl");
-            QName SERVICE_NAME = new QName("http://soap.immobilier.com/", "ContractServiceImplService");
-            Service service = Service.create(wsdlURL, SERVICE_NAME);
-            ContractService contractPort = service.getPort(ContractService.class);
+            // Créer ID contrat simple
+            long newContractId = contrats.countDocuments() + 1;
+            double montant = docBien.getDouble("prix");
 
-            String contractXML = contractPort.generateContract(body.bienId, body.acheteurId);
+            // Créer contrat
+            Document contrat = new Document("_id", newContractId)
+                    .append("bienId", achat.bienId)
+                    .append("acheteurId", achat.acheteurId)
+                    .append("dateCreation", new Date())
+                    .append("montant", montant)
+                    .append("statut", "finalisé");
+            contrats.insertOne(contrat);
 
-            // Marquer le bien comme non disponible
-            biens.updateOne(new Document("_id", (long) body.bienId),
-                    new Document("$set", new Document("disponible", false)));
+            // Marquer bien comme vendu
+            biens.updateOne(eq("_id", achat.bienId), new Document("$set", new Document("disponible", false)));
 
-            // Notification
-            Producer.sendNotification("Bien acheté: " + bien.getString("titre"));
+            // Envoyer notification JMS
+            Producer.sendNotification("Bien \"" + docBien.getString("titre") +
+                    "\" acheté pour " + montant +
+                    " € (contrat " + newContractId + ")");
 
-            resp.getWriter().write("{\"contract\":" + gson.toJson(contractXML) + "}");
-        } catch(Exception e){
+            // Réponse
+            resp.getWriter().write("{\"success\":true,\"contractId\":" + newContractId + ",\"montant\":" + montant + "}");
+
+        } catch (Exception e) {
             e.printStackTrace();
             resp.setStatus(500);
-            resp.getWriter().write("{\"error\":\"Erreur lors de la création du contrat\"}");
+            resp.getWriter().write("{\"error\":\"server\"}");
         }
     }
 }

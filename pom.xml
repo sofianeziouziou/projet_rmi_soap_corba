@@ -16,7 +16,7 @@
         <module>rest-server</module>
         <module>soap-server</module>
         <module>jms-module</module>
-        <module>client</module>
+
     </modules>
 
     <properties>

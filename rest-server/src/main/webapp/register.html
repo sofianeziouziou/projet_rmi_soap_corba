@@ -2,187 +2,492 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Système Immobilier Distribué</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Système Immobilier</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f2f5; }
-        .container { max-width: 600px; margin: auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; text-align: center; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
-        .tabs button { padding: 10px 20px; border: none; background: none; cursor: pointer; font-size: 16px; }
-        .tabs button:hover { background: #f5f5f5; }
-        .tabs button.active { border-bottom: 3px solid #007bff; color: #007bff; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        input, select { display: block; margin-bottom: 15px; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        button.action { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
-        button.action:hover { background: #0056b3; }
-        .message { padding: 10px; margin-bottom: 15px; border-radius: 5px; }
-        .message.success { background: #d4edda; color: #155724; }
-        .message.error { background: #f8d7da; color: #721c24; }
-        #currentUser { padding: 10px; background: #e7f3ff; border-radius: 5px; margin-bottom: 15px; }
-        .user-card { padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px; background: #fafafa; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -250px;
+            right: -250px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .register-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 45px 40px;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 18px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .logo-icon svg {
+            width: 45px;
+            height: 45px;
+            fill: white;
+        }
+
+        h1 {
+            color: #1f2937;
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            animation: slideIn 0.4s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #dc2626;
+            border-left: 4px solid #dc2626;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #059669;
+            border-left: 4px solid #059669;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #374151;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #f9fafb;
+        }
+
+        select {
+            padding-left: 48px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+
+        input:hover, select:hover {
+            border-color: #d1d5db;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6366f1;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .role-option {
+            position: relative;
+        }
+
+        .role-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .role-label {
+            display: block;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f9fafb;
+        }
+
+        .role-option input[type="radio"]:checked + .role-label {
+            border-color: #6366f1;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .role-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .role-title {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .login-link a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #6366f1;
+            transition: width 0.3s;
+        }
+
+        .login-link a:hover::after {
+            width: 100%;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .register-container {
+                padding: 35px 25px;
+            }
+            h1 { font-size: 26px; }
+            .role-selector { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>🏠 Système Immobilier Distribué</h1>
-
-    <div id="currentUser" style="display:none;">
-        Connecté : <strong><span id="userName"></span></strong> (<span id="userRole"></span>)
-        <button onclick="logout()" style="float:right; padding: 5px 10px;">Déconnexion</button>
+<div class="register-container">
+    <div class="logo">
+        <div class="logo-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+        </div>
+        <h1>Créer un compte</h1>
+        <p class="subtitle">Rejoignez notre plateforme immobilière</p>
     </div>
 
-    <div class="tabs">
-        <button onclick="showTab('login')" id="tab-login">Connexion</button>
-        <button onclick="showTab('register')" id="tab-register">Inscription</button>
-        <button onclick="showTab('users')" id="tab-users">Utilisateurs</button>
-    </div>
+    <div id="register-message"></div>
 
-    <!-- Connexion -->
-    <div id="login-tab" class="tab-content active">
-        <h2>Connexion</h2>
-        <div id="login-message"></div>
-        <input type="email" id="login-email" placeholder="Email" required>
-        <input type="password" id="login-password" placeholder="Mot de passe" required>
-        <button class="action" onclick="login()">Se connecter</button>
-    </div>
+    <form onsubmit="event.preventDefault(); register();">
+        <div class="form-group">
+            <label for="register-nom">Nom complet</label>
+            <div class="input-wrapper">
+                <span class="input-icon">👤</span>
+                <input
+                        type="text"
+                        id="register-nom"
+                        placeholder="Jean Dupont"
+                        required
+                        autocomplete="name"
+                >
+            </div>
+        </div>
 
-    <!-- Inscription -->
-    <div id="register-tab" class="tab-content">
-        <h2>Inscription</h2>
-        <div id="register-message"></div>
-        <input type="text" id="register-nom" placeholder="Nom complet" required>
-        <input type="email" id="register-email" placeholder="Email" required>
-        <input type="password" id="register-password" placeholder="Mot de passe" required>
-        <select id="register-role">
-            <option value="acheteur">Acheteur</option>
-            <option value="agent">Agent</option>
-        </select>
-        <button class="action" onclick="register()">S'inscrire</button>
-    </div>
+        <div class="form-group">
+            <label for="register-email">Adresse Email</label>
+            <div class="input-wrapper">
+                <span class="input-icon">📧</span>
+                <input
+                        type="email"
+                        id="register-email"
+                        placeholder="jean.dupont@exemple.com"
+                        required
+                        autocomplete="email"
+                >
+            </div>
+        </div>
 
-    <!-- Liste utilisateurs -->
-    <div id="users-tab" class="tab-content">
-        <h2>Liste des utilisateurs</h2>
-        <button class="action" onclick="loadUsers()">🔄 Actualiser</button>
-        <div id="users-list"></div>
-    </div>
+        <div class="form-group">
+            <label for="register-password">Mot de passe</label>
+            <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input
+                        type="password"
+                        id="register-password"
+                        placeholder="Minimum 6 caractères"
+                        required
+                        minlength="6"
+                        autocomplete="new-password"
+                >
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Type de compte</label>
+            <div class="role-selector">
+                <div class="role-option">
+                    <input type="radio" name="role" value="acheteur" id="role-acheteur" checked>
+                    <label for="role-acheteur" class="role-label">
+                        <div class="role-icon">🏡</div>
+                        <div class="role-title">Acheteur</div>
+                    </label>
+                </div>
+                <div class="role-option">
+                    <input type="radio" name="role" value="agent" id="role-agent">
+                    <label for="role-agent" class="role-label">
+                        <div class="role-icon">💼</div>
+                        <div class="role-title">Agent</div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="registerBtn">
+            <span id="btnText">Créer mon compte</span>
+        </button>
+    </form>
+
+    <p class="login-link">
+        Vous avez déjà un compte ?
+        <a href="login.html">Se connecter</a>
+    </p>
 </div>
 
 <script>
-    let currentUser = null;
+    const API_BASE = "http://localhost:8080";
 
-    function showTab(tab) {
-        document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
-        document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
-
-        document.getElementById(tab + '-tab').classList.add('active');
-        document.getElementById('tab-' + tab).classList.add('active');
+    function showMessage(msg, type = 'error') {
+        const el = document.getElementById('register-message');
+        const className = type === 'success' ? 'alert-success' : 'alert-error';
+        el.innerHTML = `<div class="alert ${className}">${msg}</div>`;
+        setTimeout(() => el.innerHTML = '', 5000);
     }
 
-    function showMessage(id, msg, type='error') {
-        const el = document.getElementById(id);
-        el.innerHTML = `<div class="message ${type}">${msg}</div>`;
-        setTimeout(() => el.innerHTML = '', 4000);
-    }
+    function setLoading(isLoading) {
+        const btn = document.getElementById('registerBtn');
+        const btnText = document.getElementById('btnText');
 
-    async function login() {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-
-        if(!email || !password) {
-            showMessage('login-message', 'Veuillez remplir tous les champs');
-            return;
-        }
-
-        try {
-            const res = await fetch('/users/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, password})
-            });
-
-            if(res.ok){
-                currentUser = await res.json();
-                document.getElementById('currentUser').style.display = 'block';
-                document.getElementById('userName').innerText = currentUser.nom;
-                document.getElementById('userRole').innerText = currentUser.role;
-                showMessage('login-message', 'Connecté avec succès !', 'success');
-                setTimeout(() => showTab('users'), 1000);
-            } else {
-                showMessage('login-message', 'Email ou mot de passe incorrect');
-            }
-        } catch(e) {
-            showMessage('login-message', 'Erreur de connexion au serveur');
+        if (isLoading) {
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+            btnText.innerHTML = 'Inscription en cours<span class="loading"></span>';
+        } else {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btnText.textContent = 'Créer mon compte';
         }
     }
 
     async function register() {
-        const nom = document.getElementById('register-nom').value;
-        const email = document.getElementById('register-email').value;
+        const nom = document.getElementById('register-nom').value.trim();
+        const email = document.getElementById('register-email').value.trim();
         const password = document.getElementById('register-password').value;
-        const role = document.getElementById('register-role').value;
+        const role = document.querySelector('input[name="role"]:checked').value;
 
-        if(!nom || !email || !password) {
-            showMessage('register-message', 'Veuillez remplir tous les champs');
+        if (!nom || !email || !password) {
+            showMessage('⚠️ Veuillez remplir tous les champs');
             return;
         }
 
+        if (password.length < 6) {
+            showMessage('⚠️ Le mot de passe doit contenir au moins 6 caractères');
+            return;
+        }
+
+        setLoading(true);
+
         try {
-            const res = await fetch('/users/register', {
+            console.log('📝 Tentative d\'inscription:', { nom, email, role });
+
+            const response = await fetch(`${API_BASE}/users/register`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({nom,email,password,role})
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ nom, email, password, role })
             });
 
-            if(res.ok){
-                showMessage('register-message', 'Inscription réussie ! Connectez-vous.', 'success');
-                setTimeout(() => showTab('login'), 1500);
+            console.log('📡 Statut réponse:', response.status);
+
+            if (response.ok) {
+                const user = await response.json();
+                console.log('✅ Utilisateur créé:', user);
+
+                showMessage('✅ Compte créé avec succès ! Redirection vers la connexion...', 'success');
+
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
             } else {
-                const err = await res.json();
-                showMessage('register-message', err.error === 'exists' ? 'Cet email est déjà utilisé' : 'Erreur lors de l\'inscription');
+                const error = await response.json();
+                console.error('❌ Erreur:', error);
+
+                if (error.error === 'exists') {
+                    showMessage('❌ Cet email est déjà utilisé');
+                } else {
+                    showMessage('❌ Erreur lors de la création du compte');
+                }
             }
-        } catch(e) {
-            showMessage('register-message', 'Erreur de connexion au serveur');
+        } catch (error) {
+            console.error('❌ Erreur réseau:', error);
+            showMessage('❌ Impossible de se connecter au serveur. Vérifiez que le serveur est démarré.');
+        } finally {
+            setLoading(false);
         }
-    }
-
-    function logout() {
-        currentUser = null;
-        document.getElementById('currentUser').style.display = 'none';
-        showTab('login');
-    }
-
-    async function loadUsers() {
-        try {
-            const res = await fetch('/users');
-            if(res.ok){
-                const users = await res.json();
-                const container = document.getElementById('users-list');
-                container.innerHTML = '<h3>Total: ' + users.length + ' utilisateurs</h3>';
-
-                users.forEach(u => {
-                    const div = document.createElement('div');
-                    div.className = 'user-card';
-                    div.innerHTML = `
-                        <strong>${u.nom}</strong><br>
-                        Email: ${u.email}<br>
-                        Rôle: <span style="color: ${u.role === 'agent' ? '#007bff' : '#28a745'}">${u.role}</span>
-                    `;
-                    container.appendChild(div);
-                });
-            } else {
-                showMessage('users-list', 'Erreur lors du chargement');
-            }
-        } catch(e) {
-            showMessage('users-list', 'Erreur de connexion au serveur');
-        }
-    }
-
-    // Charger les utilisateurs au démarrage si on est sur l'onglet
-    if(window.location.hash === '#users') {
-        showTab('users');
-        loadUsers();
     }
 </script>
 </body>
