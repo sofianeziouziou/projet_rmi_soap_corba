@@ -2,7 +2,10 @@ package com.immobilier.rest;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.FindIterable;
 import org.bson.Document;
+import java.util.ArrayList;
+import java.util.List;
 import static com.mongodb.client.model.Filters.*;
 
 public class UserDAO {
@@ -66,6 +69,22 @@ public class UserDAO {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Liste tous les utilisateurs
+     */
+    public List<Utilisateur> findAll() {
+        List<Utilisateur> users = new ArrayList<>();
+        try {
+            FindIterable<Document> docs = collection.find();
+            for (Document doc : docs) {
+                users.add(documentToUser(doc));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return users;
     }
 
     /**

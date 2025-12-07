@@ -1,4 +1,4 @@
-package com.immobilier.corba;
+package com.immobilier.core;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -12,9 +12,9 @@ public class MongoDBConnection {
     static {
         try {
             mongoClient = MongoClients.create(CONNECTION_STRING);
-            System.out.println("✅ [CORBA] Connexion MongoDB établie");
+            System.out.println("✅ Connexion MongoDB établie");
         } catch (Exception e) {
-            System.err.println("❌ [CORBA] Erreur connexion MongoDB: " + e.getMessage());
+            System.err.println("❌ Erreur connexion MongoDB: " + e.getMessage());
             e.printStackTrace();
         }
     }

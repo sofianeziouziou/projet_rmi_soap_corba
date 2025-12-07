@@ -1,4 +1,4 @@
-package com.immobilier.rest;
+package com.immobilier.core;
 
 public class Utilisateur {
     private long id;

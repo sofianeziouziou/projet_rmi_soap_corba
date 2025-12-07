@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>com.immobilier</groupId>
         <artifactId>ImmobilierProject</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!-- ✅ CORRIGÉ: était corba-server, maintenant soap-server -->
     <artifactId>soap-server</artifactId>
     <packaging>jar</packaging>
 
@@ -23,14 +20,15 @@
     </properties>
 
     <dependencies>
-        <!-- MongoDB Driver -->
+
+        <!-- Core (MongoDB + Utilisateur) -->
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-            <version>4.11.1</version>
+            <groupId>com.immobilier</groupId>
+            <artifactId>immobilier-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
-        <!-- Jakarta XML Web Services -->
+        <!-- SOAP -->
         <dependency>
             <groupId>com.sun.xml.ws</groupId>
             <artifactId>jaxws-rt</artifactId>
@@ -43,29 +41,25 @@
             <artifactId>activemq-all</artifactId>
             <version>5.17.3</version>
         </dependency>
+
+        <!-- Log -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
+            <artifactId>log4j-api</artifactId>
             <version>2.20.0</version>
         </dependency>
-
-        <!-- Log4j Core -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>2.20.0</version>
         </dependency>
 
-        <!-- Log4j API -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.20.0</version>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+
+            <!-- Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -77,6 +71,7 @@
                 </configuration>
             </plugin>
 
+            <!-- Executable -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -85,12 +80,7 @@
                     <mainClass>com.immobilier.soap.SoapServer</mainClass>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>11.0.15</version> <!-- ou la dernière version disponible -->
 
-            </plugin>
         </plugins>
     </build>
 </project>

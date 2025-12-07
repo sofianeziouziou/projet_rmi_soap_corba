@@ -9,13 +9,14 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <!-- ⚠️ ATTENTION: Chaque module doit apparaître UNE SEULE FOIS -->
     <modules>
+        <module>immobilier-core</module>
         <module>corba-server</module>
         <module>rest-server</module>
         <module>soap-server</module>
         <module>jms-module</module>
         <module>client</module>
+        <module>immobilier-core</module>
     </modules>
 
     <properties>
