@@ -11,4 +11,14 @@
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
 
+    <servlet>
+        <servlet-name>UtilisateurServlet</servlet-name>
+        <servlet-class>com.immobilier.rest.UtilisateursServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>UtilisateurServlet</servlet-name>
+        <url-pattern>/api/utilisateurs/*</url-pattern>
+    </servlet-mapping>
+
 </web-app>

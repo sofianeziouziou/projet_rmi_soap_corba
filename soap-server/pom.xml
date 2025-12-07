@@ -85,6 +85,12 @@
                     <mainClass>com.immobilier.soap.SoapServer</mainClass>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>11.0.15</version> <!-- ou la dernière version disponible -->
+
+            </plugin>
         </plugins>
     </build>
 </project>
