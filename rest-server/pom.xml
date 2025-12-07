@@ -27,10 +27,12 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
+
+        <!-- MongoDB Driver (NOUVEAU - Remplace SQL Server) -->
         <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-            <version>11.2.0.jre17</version>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>4.11.1</version>
         </dependency>
     </dependencies>
 
@@ -41,16 +43,14 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.3.0</version>
             </plugin>
-            <!-- Plugin pour lancer le serveur REST -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.6.2</version>
                 <configuration>
-                    <mainClass>com.immobilier.rest.UtilisateursServlet</mainClass>
+                    <mainClass>com.immobilier.rest.TestMongoDB</mainClass>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>

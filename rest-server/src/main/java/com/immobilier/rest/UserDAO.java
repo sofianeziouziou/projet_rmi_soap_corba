@@ -1,65 +1,83 @@
 package com.immobilier.rest;
 
-import java.sql.*;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import static com.mongodb.client.model.Filters.*;
 
 public class UserDAO {
+    private final MongoCollection<Document> collection;
 
-    public Utilisateur findByEmailAndPassword(String email, String password) throws Exception {
-        try (Connection c = DBConnexion.getConnection();
-             PreparedStatement ps = c.prepareStatement(
-                     "SELECT id, nom, email, password, role FROM Utilisateurs WHERE email=? AND password=?")) {
-            ps.setString(1, email);
-            ps.setString(2, password);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                Utilisateur u = new Utilisateur();
-                u.setId(rs.getInt("id"));
-                u.setNom(rs.getString("nom"));
-                u.setEmail(rs.getString("email"));
-                u.setPassword(rs.getString("password"));
-                u.setRole(rs.getString("role"));
-                return u;
-            }
+    public UserDAO() {
+        MongoDatabase db = MongoDBConnection.getDatabase();
+        this.collection = db.getCollection("utilisateurs");
+    }
+
+    /**
+     * Trouve un utilisateur par email et mot de passe
+     */
+    public Utilisateur findByEmailAndPassword(String email, String password) {
+        try {
+            Document doc = collection.find(
+                    and(eq("email", email), eq("password", password))
+            ).first();
+
+            return doc != null ? documentToUser(doc) : null;
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
 
-    public Utilisateur findByEmail(String email) throws Exception {
-        try (Connection c = DBConnexion.getConnection();
-             PreparedStatement ps = c.prepareStatement(
-                     "SELECT id, nom, email, password, role FROM Utilisateurs WHERE email=?")) {
-            ps.setString(1, email);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                Utilisateur u = new Utilisateur();
-                u.setId(rs.getInt("id"));
-                u.setNom(rs.getString("nom"));
-                u.setEmail(rs.getString("email"));
-                u.setPassword(rs.getString("password"));
-                u.setRole(rs.getString("role"));
-                return u;
-            }
+    /**
+     * Trouve un utilisateur par email uniquement
+     */
+    public Utilisateur findByEmail(String email) {
+        try {
+            Document doc = collection.find(eq("email", email)).first();
+            return doc != null ? documentToUser(doc) : null;
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
 
-    public Utilisateur create(Utilisateur u) throws Exception {
-        try (Connection c = DBConnexion.getConnection();
-             PreparedStatement ps = c.prepareStatement(
-                     "INSERT INTO Utilisateurs(nom, email, password, role) VALUES(?, ?, ?, ?)",
-                     Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, u.getNom());
-            ps.setString(2, u.getEmail());
-            ps.setString(3, u.getPassword());
-            ps.setString(4, u.getRole());
-            ps.executeUpdate();
-            ResultSet keys = ps.getGeneratedKeys();
-            if (keys.next()) {
-                u.setId(keys.getInt(1));
-                u.setPassword(null); // pour ne pas renvoyer le mot de passe
-                return u;
-            }
+    /**
+     * Crée un nouvel utilisateur
+     */
+    public Utilisateur create(Utilisateur u) {
+        try {
+            // Générer un nouvel ID
+            long newId = collection.countDocuments() + 1;
+
+            Document doc = new Document()
+                    .append("_id", newId)
+                    .append("nom", u.getNom())
+                    .append("email", u.getEmail())
+                    .append("password", u.getPassword())
+                    .append("role", u.getRole());
+
+            collection.insertOne(doc);
+
+            u.setId(newId);
+            u.setPassword(null); // Ne pas renvoyer le mot de passe
+            return u;
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Convertit un Document MongoDB en objet Utilisateur
+     */
+    private Utilisateur documentToUser(Document doc) {
+        Utilisateur u = new Utilisateur();
+        u.setId(doc.getLong("_id"));
+        u.setNom(doc.getString("nom"));
+        u.setEmail(doc.getString("email"));
+        u.setPassword(doc.getString("password"));
+        u.setRole(doc.getString("role"));
+        return u;
     }
 }

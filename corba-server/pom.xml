@@ -15,12 +15,21 @@
     <artifactId>corba-server</artifactId>
     <packaging>jar</packaging>
 
+    <!-- ⚠️ IMPORTANT: Encoding UTF-8 -->
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+    </properties>
+
     <dependencies>
-        <!-- JDBC SQL Server -->
+        <!-- MongoDB Driver -->
         <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-            <version>11.2.0.jre17</version>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>4.11.1</version>
         </dependency>
 
         <!-- JacORB -->
@@ -36,14 +45,14 @@
             <version>3.9</version>
         </dependency>
 
-        <!-- javax.rmi CORBA (manquant dans Java 17) -->
+        <!-- Glassfish CORBA -->
         <dependency>
             <groupId>org.glassfish.corba</groupId>
             <artifactId>glassfish-corba-orb</artifactId>
             <version>4.2.4</version>
         </dependency>
 
-        <!-- SLF4J Implementation -->
+        <!-- SLF4J -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -60,7 +69,7 @@
 
     <build>
         <plugins>
-            <!-- IDL compiler -->
+            <!-- Plugin IDL: Génère les classes Java depuis IDL -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>idlj-maven-plugin</artifactId>
@@ -73,12 +82,28 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <!-- ⚠️ Chemin vers le fichier IDL -->
                     <sourceDirectory>${project.basedir}/src/main/idl</sourceDirectory>
+
+                    <!-- ⚠️ Destination des classes générées -->
                     <outputDirectory>${project.build.directory}/generated-sources/idl</outputDirectory>
+
+                    <!-- Options -->
+
+
+                    <!-- ⚠️ Sources générées -->
+                    <sources>
+                        <source>
+                            <compatible>true</compatible>
+                            <includes>
+                                <include>**/*.idl</include>
+                            </includes>
+                        </source>
+                    </sources>
                 </configuration>
             </plugin>
 
-            <!-- Compiler plugin -->
+            <!-- Compiler plugin avec encoding UTF-8 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -86,6 +111,41 @@
                 <configuration>
                     <source>17</source>
                     <target>17</target>
+                    <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        <arg>-Xlint:deprecation</arg>
+                        <arg>-Xlint:unchecked</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- Build helper: Ajouter les sources générées -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/idl</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Resources plugin avec encoding -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>

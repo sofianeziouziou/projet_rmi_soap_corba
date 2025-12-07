@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
@@ -17,10 +18,18 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
-        <!-- CORBA generated classes -->
+        <!-- MongoDB Driver -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>4.11.1</version>
+        </dependency>
+
+        <!-- CORBA generated classes - UNE SEULE FOIS! -->
         <dependency>
             <groupId>com.immobilier</groupId>
             <artifactId>corba-server</artifactId>
@@ -55,13 +64,6 @@
             <version>2.10.1</version>
         </dependency>
 
-        <!-- JDBC SQL Server -->
-        <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-            <version>11.2.0.jre17</version>
-        </dependency>
-
         <!-- HTTP client (REST) -->
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
@@ -69,11 +71,17 @@
             <version>5.2.1</version>
         </dependency>
 
-        <!-- JMS module si séparé -->
+        <!-- JMS module -->
         <dependency>
             <groupId>com.immobilier</groupId>
             <artifactId>jms-module</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.immobilier</groupId>
+            <artifactId>corba-server</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -87,6 +95,7 @@
                 <configuration>
                     <source>17</source>
                     <target>17</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
 

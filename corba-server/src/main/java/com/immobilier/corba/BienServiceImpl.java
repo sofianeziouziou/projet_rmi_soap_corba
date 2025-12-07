@@ -1,56 +1,57 @@
 package com.immobilier.corba;
 
 import Immobilier.*;
-import java.sql.*;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import java.util.ArrayList;
 import java.util.List;
+import static com.mongodb.client.model.Filters.*;
 
 public class BienServiceImpl extends BienServicePOA {
+    private final MongoCollection<Document> collection;
+
+    public BienServiceImpl() {
+        MongoDatabase db = MongoDBConnection.getDatabase();
+        this.collection = db.getCollection("biens");
+        System.out.println("✅ BienServiceImpl initialisé avec MongoDB");
+    }
 
     @Override
     public int addBien(Immobilier.Bien b) {
-        try (Connection c = DBConnexion.getConnection();
-             PreparedStatement ps = c.prepareStatement(
-                     "INSERT INTO Biens(titre, description, prix, disponible, agentId) VALUES(?,?,?,?,?)",
-                     Statement.RETURN_GENERATED_KEYS)) {
+        try {
+            // Générer un nouvel ID
+            long newId = collection.countDocuments() + 1;
 
-            ps.setString(1, b.titre);
-            ps.setString(2, b.description);
-            ps.setDouble(3, b.prix);
-            ps.setBoolean(4, b.disponible);
-            ps.setInt(5, (int) b.agentId); // converti en int
-            ps.executeUpdate();
+            Document doc = new Document()
+                    .append("_id", newId)
+                    .append("titre", b.titre)
+                    .append("description", b.description)
+                    .append("prix", b.prix)
+                    .append("disponible", b.disponible)
+                    .append("agentId", (long) b.agentId);
 
-            ResultSet keys = ps.getGeneratedKeys();
-            if (keys.next()) {
-                return keys.getInt(1); // return int, pas long
-            }
+            collection.insertOne(doc);
+            System.out.println("✅ Bien ajouté avec ID: " + newId);
+            return (int) newId;
+
         } catch (Exception e) {
+            System.err.println("❌ Erreur lors de l'ajout du bien: " + e.getMessage());
             e.printStackTrace();
+            return -1;
         }
-        return -1;
     }
 
     @Override
     public Immobilier.Bien[] listBiens() {
         List<Immobilier.Bien> list = new ArrayList<>();
-        try (Connection c = DBConnexion.getConnection();
-             PreparedStatement ps = c.prepareStatement(
-                     "SELECT id,titre,description,prix,disponible,agentId FROM Biens")) {
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Immobilier.Bien b = new Immobilier.Bien();
-                b.id = rs.getInt("id");           // int pour correspondre à IDL
-                b.titre = rs.getString("titre");
-                b.description = rs.getString("description");
-                b.prix = rs.getDouble("prix");
-                b.disponible = rs.getBoolean("disponible");
-                b.agentId = rs.getInt("agentId"); // int
-                list.add(b);
+        try {
+            for (Document doc : collection.find()) {
+                list.add(documentToBien(doc));
             }
-
+            System.out.println("📋 " + list.size() + " biens récupérés");
         } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la récupération des biens: " + e.getMessage());
             e.printStackTrace();
         }
         return list.toArray(new Immobilier.Bien[0]);
@@ -59,24 +60,13 @@ public class BienServiceImpl extends BienServicePOA {
     @Override
     public Immobilier.Bien[] listBiensAgent(int agentId) {
         List<Immobilier.Bien> list = new ArrayList<>();
-        try (Connection c = DBConnexion.getConnection();
-             PreparedStatement ps = c.prepareStatement(
-                     "SELECT id,titre,description,prix,disponible,agentId FROM Biens WHERE agentId=?")) {
-
-            ps.setInt(1, agentId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Immobilier.Bien b = new Immobilier.Bien();
-                b.id = rs.getInt("id");
-                b.titre = rs.getString("titre");
-                b.description = rs.getString("description");
-                b.prix = rs.getDouble("prix");
-                b.disponible = rs.getBoolean("disponible");
-                b.agentId = rs.getInt("agentId");
-                list.add(b);
+        try {
+            for (Document doc : collection.find(eq("agentId", (long) agentId))) {
+                list.add(documentToBien(doc));
             }
-
+            System.out.println("📋 " + list.size() + " biens trouvés pour l'agent " + agentId);
         } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la récupération des biens de l'agent: " + e.getMessage());
             e.printStackTrace();
         }
         return list.toArray(new Immobilier.Bien[0]);
@@ -84,17 +74,33 @@ public class BienServiceImpl extends BienServicePOA {
 
     @Override
     public boolean checkDisponibilite(int bienId) {
-        try (Connection c = DBConnexion.getConnection();
-             PreparedStatement ps = c.prepareStatement(
-                     "SELECT disponible FROM Biens WHERE id=?")) {
-
-            ps.setInt(1, bienId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getBoolean("disponible");
-
+        try {
+            Document doc = collection.find(eq("_id", (long) bienId)).first();
+            if (doc != null) {
+                boolean disponible = doc.getBoolean("disponible", false);
+                System.out.println("🔍 Bien " + bienId + " - Disponible: " + disponible);
+                return disponible;
+            }
+            System.out.println("⚠️ Bien " + bienId + " non trouvé");
+            return false;
         } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la vérification de disponibilité: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return false;
+    }
+
+    /**
+     * Convertit un Document MongoDB en objet Bien CORBA
+     */
+    private Immobilier.Bien documentToBien(Document doc) {
+        Immobilier.Bien b = new Immobilier.Bien();
+        b.id = doc.getLong("_id").intValue();
+        b.titre = doc.getString("titre");
+        b.description = doc.getString("description");
+        b.prix = doc.getDouble("prix");
+        b.disponible = doc.getBoolean("disponible");
+        b.agentId = doc.getLong("agentId").intValue();
+        return b;
     }
 }
