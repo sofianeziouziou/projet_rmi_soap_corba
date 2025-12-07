@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrat - Immobilier</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div id="currentUser" style="display:none;">
+        Connecté : <strong id="userName"></strong> (<span id="userRole"></span>)
+        <button onclick="logout()" style="float:right;">Déconnexion</button>
+    </div>
+
+    <h1>Contrat</h1>
+    <div id="contract-result"></div>
+    <button id="buy-btn">Acheter</button>
+</div>
+
+<script src="shared.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if(!currentUser) { alert("Connectez-vous"); window.location.href="login.html"; return; }
+        document.getElementById('currentUser').style.display='block';
+        document.getElementById('userName').textContent=currentUser.nom;
+        document.getElementById('userRole').textContent=currentUser.role;
+
+        const bienId = localStorage.getItem("selectedBien");
+        document.getElementById('buy-btn').addEventListener("click", () => acheterBien(bienId));
+    });
+</script>
+</body>
+</html>

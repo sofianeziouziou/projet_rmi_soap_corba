@@ -4,7 +4,7 @@ public class Bien {
     private long id;
     private String titre;
     private String description;
-    private double prix;
+    private Double prix;
     private boolean disponible;
     private long agentId;
 

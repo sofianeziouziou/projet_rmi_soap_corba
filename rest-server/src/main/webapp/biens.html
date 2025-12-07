@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Biens - Système Immobilier</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div id="currentUser" style="display:none;">
+        Connecté : <strong id="userName"></strong> (<span id="userRole"></span>)
+        <button onclick="logout()" style="float:right; padding:5px 10px;">Déconnexion</button>
+    </div>
+
+    <h1>Liste des biens</h1>
+    <div id="agent-add" style="display:none; margin-bottom:20px;">
+        <h3>Ajouter un bien</h3>
+        <input type="text" id="bien-titre" placeholder="Titre">
+        <input type="text" id="bien-description" placeholder="Description">
+        <input type="number" id="bien-prix" placeholder="Prix">
+        <button class="action" onclick="addBien()">Ajouter</button>
+    </div>
+    <div id="biens-list"></div>
+
+    <h1>Notifications</h1>
+    <div id="notifications"></div>
+</div>
+<script src="shared.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const user = JSON.parse(localStorage.getItem("currentUser"));
+        if(!user){
+            alert("Veuillez vous connecter !");
+            window.location.href="login.html";
+            return;
+        }
+        document.getElementById('currentUser').style.display='block';
+        document.getElementById('userName').innerText=user.nom;
+        document.getElementById('userRole').innerText=user.role;
+
+        if(user.role==='agent') document.getElementById('agent-add').style.display='block';
+
+        loadBiens();
+        listenNotifications();
+    });
+</script>
+</body>
+</html>
