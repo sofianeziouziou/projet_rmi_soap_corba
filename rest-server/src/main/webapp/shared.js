@@ -1,1 +1,202 @@
-<script> const API_BASE = "http://localhost:8080"; let currentUser = null; document.addEventListener("DOMContentLoaded", init); function init() { const userStr = localStorage.getItem('currentUser'); if (!userStr) { alert('⚠️ Veuillez vous connecter'); window.location.href = 'login.html'; return; } try { currentUser = JSON.parse(userStr); console.log('👤 Utilisateur connecté:', currentUser); document.getElementById('userName').textContent = currentUser.nom; document.getElementById('userRole').textContent = currentUser.role; if (currentUser.role === 'agent') { document.getElementById('agent-add').style.display = 'block'; } loadBiens(); listenNotifications(); } catch (e) { console.error('❌ Erreur parsing user:', e); localStorage.removeItem('currentUser'); window.location.href = 'login.html'; } } function logout() { if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) { localStorage.removeItem('currentUser'); window.location.href = 'login.html'; } } async function loadBiens() { const container = document.getElementById('biens-list'); try { console.log('📥 Chargement des biens...'); const response = await fetch(${API_BASE}/biens); if (!response.ok) { throw new Error(HTTP ${response.status}); } const biens = await response.json(); console.log('✅ Biens chargés:', biens.length); if (biens.length === 0) { container.innerHTML = <div class="empty-state"> <svg viewBox="0 0 24 24"> <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/> </svg> <h3>Aucun bien disponible</h3> <p>Les biens immobiliers apparaîtront ici</p> </div> ; container.className = ''; return; } container.innerHTML = ''; container.className = 'biens-grid'; biens.forEach(bien => { const card = createBienCard(bien); container.appendChild(card); }); } catch (error) { console.error('❌ Erreur chargement biens:', error); container.innerHTML = <div class="empty-state"> <h3>Erreur de chargement</h3> <p>Impossible de charger les biens. Vérifiez que le serveur est démarré.</p> <button class="btn btn-primary" onclick="loadBiens()" style="margin-top:20px; max-width:300px;"> Réessayer </button> </div> ; container.className = ''; } } function createBienCard(bien) { const card = document.createElement('div'); card.className = 'bien-card'; const disponible = bien.disponible; const badgeClass = disponible ? 'badge-disponible' : 'badge-vendu'; const badgeText = disponible ? '✓ Disponible' : '✗ Vendu'; const icons = ['🏠', '🏡', '🏢', '🏘️', '🏰']; const randomIcon = icons[Math.floor(Math.random() * icons.length)]; card.innerHTML = <div class="bien-image"> ${randomIcon} <div class="bien-badge ${badgeClass}">${badgeText}</div> </div> <div class="bien-body"> <h3 class="bien-title">${bien.titre}</h3> <div class="bien-price">${parseFloat(bien.prix).toFixed(2)} €</div> <p class="bien-description">${bien.description || 'Pas de description disponible'}</p> ${disponible && currentUser.role === 'acheteur' ? <button class="btn btn-acheter" onclick="acheterBien(${bien.id})"> 🛒 Acheter ce bien </button> : ''} </div> ; return card; } async function addBien() { const titre = document.getElementById('bien-titre').value.trim(); const prix = parseFloat(document.getElementById('bien-prix').value); const description = document.getElementById('bien-description').value.trim(); if (!titre || !prix) { alert('⚠️ Veuillez remplir le titre et le prix'); return; } if (prix <= 0) { alert('⚠️ Le prix doit être supérieur à 0'); return; } try { console.log('➕ Ajout bien:', { titre, prix, description }); const response = await fetch(${API_BASE}/biens, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titre, prix, description, agentId: currentUser.id, disponible: true }) }); if (response.ok) { alert('✅ Bien ajouté avec succès !'); document.getElementById('bien-titre').value = ''; document.getElementById('bien-prix').value = ''; document.getElementById('bien-description').value = ''; loadBiens(); } else { alert('❌ Erreur lors de l\'ajout du bien'); } } catch (error) { console.error('❌ Erreur:', error); alert('❌ Impossible de se connecter au serveur'); } } async function acheterBien(bienId) { if (!confirm('Êtes-vous sûr de vouloir acheter ce bien ?')) { return; } try { console.log('🛒 Achat bien:', bienId, 'par', currentUser.id); const response = await fetch(${API_BASE}/acheterBien, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bienId: parseInt(bienId), acheteurId: parseInt(currentUser.id) }) }); console.log('📡 Statut:', response.status); const data = await response.json(); console.log('📥 Réponse:', data); if (response.ok && data.success) { alert(✅ Félicitations ! Achat réussi.\n\nContrat N°${data.contractId}\nMontant: ${data.montant.toFixed(2)} €); loadBiens(); } else { const errorMsg = data.error === 'bien_not_found' ? 'Bien introuvable' : data.error === 'bien_not_available' ? 'Ce bien n\'est plus disponible' : data.error || 'Erreur inconnue'; alert('❌ Erreur: ' + errorMsg); } } catch (error) { console.error('❌ Erreur:', error); alert('❌ Impossible de se connecter au serveur'); } } async function listenNotifications() { setInterval(async () => { try { const response = await fetch(${API_BASE}/notifications); if (response.ok) { const notifs = await response.json(); const container = document.getElementById('notifications'); if (notifs.length === 0) { container.innerHTML = '<p style="color:#9ca3af;">Aucune notification pour le moment</p>'; return; } container.innerHTML = ''; notifs.slice(-5).reverse().forEach(notif => { const div = document.createElement('div'); div.className = 'notification-item'; div.textContent = notif.message; container.appendChild(div); }); } } catch (error) { console.error('Erreur notifications:', error); } }, 3000); } </script> </body> </html>
+<script>
+const API_BASE = "http://localhost:8080";
+let currentUser = null;
+
+document.addEventListener("DOMContentLoaded", init);
+
+function init() {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) {
+        alert('⚠️ Veuillez vous connecter');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    try {
+        currentUser = JSON.parse(userStr);
+        console.log('👤 Utilisateur connecté:', currentUser);
+
+        document.getElementById('userName').textContent = currentUser.nom || 'Utilisateur';
+        document.getElementById('userRole').textContent = currentUser.role || 'Rôle inconnu';
+
+        if (currentUser.role === 'agent') {
+            document.getElementById('agent-add').style.display = 'block';
+        }
+
+        loadBiens();
+        listenNotifications();
+
+    } catch (e) {
+        console.error('❌ Erreur parsing user:', e);
+        localStorage.removeItem('currentUser');
+        window.location.href = 'login.html';
+    }
+}
+
+function logout() {
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+        localStorage.removeItem('currentUser');
+        window.location.href = 'login.html';
+    }
+}
+
+async function loadBiens() {
+    const container = document.getElementById('biens-list');
+    try {
+        console.log('📥 Chargement des biens...');
+        const response = await fetch(`${API_BASE}/biens`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const biens = await response.json();
+        console.log('✅ Biens chargés:', biens.length);
+
+        if (biens.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                    </svg>
+                    <h3>Aucun bien disponible</h3>
+                    <p>Les biens immobiliers apparaîtront ici</p>
+                </div>
+            `;
+            container.className = '';
+            return;
+        }
+
+        container.innerHTML = '';
+        container.className = 'biens-grid';
+
+        biens.forEach(bien => {
+            container.appendChild(createBienCard(bien));
+        });
+
+    } catch (error) {
+        console.error('❌ Erreur chargement biens:', error);
+        container.innerHTML = `
+            <div class="empty-state">
+                <h3>Erreur de chargement</h3>
+                <p>Impossible de charger les biens. Vérifiez que le serveur est démarré.</p>
+                <button class="btn btn-primary" onclick="loadBiens()" style="margin-top:20px; max-width:300px;">Réessayer</button>
+            </div>
+        `;
+        container.className = '';
+    }
+}
+
+function createBienCard(bien) {
+    const card = document.createElement('div');
+    card.className = 'bien-card';
+
+    const disponible = bien.disponible;
+    const badgeClass = disponible ? 'badge-disponible' : 'badge-vendu';
+    const badgeText = disponible ? '✓ Disponible' : '✗ Vendu';
+    const icons = ['🏠', '🏡', '🏢', '🏘️', '🏰'];
+    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+
+    card.innerHTML = `
+        <div class="bien-image">
+            ${randomIcon}
+            <div class="bien-badge ${badgeClass}">${badgeText}</div>
+        </div>
+        <div class="bien-body">
+            <h3 class="bien-title">${bien.titre}</h3>
+            <div class="bien-price">${parseFloat(bien.prix).toFixed(2)} €</div>
+            <p class="bien-description">${bien.description || 'Pas de description disponible'}</p>
+            ${disponible && currentUser.role === 'acheteur' ?
+                `<button class="btn btn-acheter" onclick="acheterBien(${bien.id})">🛒 Acheter ce bien</button>`
+                : ''}
+        </div>
+    `;
+    return card;
+}
+
+async function addBien() {
+    const titre = document.getElementById('bien-titre').value.trim();
+    const prix = parseFloat(document.getElementById('bien-prix').value);
+    const description = document.getElementById('bien-description').value.trim();
+
+    if (!titre || !prix) {
+        alert('⚠️ Veuillez remplir le titre et le prix');
+        return;
+    }
+    if (prix <= 0) {
+        alert('⚠️ Le prix doit être supérieur à 0');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/biens`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ titre, prix, description, agentId: currentUser.id, disponible: true })
+        });
+        if (response.ok) {
+            alert('✅ Bien ajouté avec succès !');
+            document.getElementById('bien-titre').value = '';
+            document.getElementById('bien-prix').value = '';
+            document.getElementById('bien-description').value = '';
+            loadBiens();
+        } else {
+            alert('❌ Erreur lors de l\'ajout du bien');
+        }
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        alert('❌ Impossible de se connecter au serveur');
+    }
+}
+
+async function acheterBien(bienId) {
+    if (!confirm('Êtes-vous sûr de vouloir acheter ce bien ?')) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/acheterBien`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bienId: parseInt(bienId), acheteurId: parseInt(currentUser.id) })
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            alert(`✅ Félicitations ! Achat réussi.\n\nContrat N°${data.contractId}\nMontant: ${data.montant.toFixed(2)} €`);
+            loadBiens();
+        } else {
+            const errorMsg = data.error === 'bien_not_found' ? 'Bien introuvable'
+                            : data.error === 'bien_not_available' ? 'Ce bien n\'est plus disponible'
+                            : data.error || 'Erreur inconnue';
+            alert('❌ Erreur: ' + errorMsg);
+        }
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        alert('❌ Impossible de se connecter au serveur');
+    }
+}
+
+async function listenNotifications() {
+    setInterval(async () => {
+        try {
+            const response = await fetch(`${API_BASE}/notifications`);
+            if (response.ok) {
+                const notifs = await response.json();
+                const container = document.getElementById('notifications');
+
+                if (notifs.length === 0) {
+                    container.innerHTML = '<p style="color:#9ca3af;">Aucune notification pour le moment</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                notifs.slice(-5).reverse().forEach(notif => {
+                    const div = document.createElement('div');
+                    div.className = 'notification-item';
+                    div.textContent = notif.message;
+                    container.appendChild(div);
+                });
+            }
+        } catch (error) {
+            console.error('Erreur notifications:', error);
+        }
+    }, 3000);
+}
+</script>
+s
